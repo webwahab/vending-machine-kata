@@ -9,13 +9,28 @@ class BankTest extends Specification {
 
     Bank bank
 
-    def "simple bank test"() {
+    def "insert money"() {
         given:
-        bank = new Bank()
+        bank = new Bank(new HashMap<Coin, Integer>())
         when:
         bank.insertCoin(Coin.COIN_0_1)
         bank.insertCoin(Coin.COIN_0_2)
         then:
         bank.balance() == 0.3
+    }
+
+    def "insert coins after bank initialization"() {
+        given:
+        Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
+            {
+                put(Coin.COIN_0_5, 2);
+                put(Coin.COIN_0_1, 3);
+            }
+        };
+        bank = new Bank()
+        when:
+        bank.initialize(coins)
+        then:
+        bank.balance() == 1.3
     }
 }
