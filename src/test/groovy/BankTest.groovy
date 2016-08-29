@@ -23,14 +23,45 @@ class BankTest extends Specification {
         given:
         Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
             {
-                put(Coin.COIN_0_5, 2);
-                put(Coin.COIN_0_1, 3);
+                put(Coin.COIN_0_5, 2)
+                put(Coin.COIN_0_1, 3)
             }
         };
         bank = new Bank()
         when:
         bank.initialize(coins)
         then:
+        bank.balance() == 1.3
+    }
+
+    def "withdraw money"() {
+        given:
+        Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
+            {
+                put(Coin.COIN_0_5, 2)
+                put(Coin.COIN_0_1, 3)
+            }
+        };
+        bank = new Bank()
+        bank.initialize(coins)
+        when:
+        bank.withdraw(new BigDecimal("1.1"))
+        then:
+        bank.balance() == 0.2
+    }
+
+    def "not enough amount of money"() {
+        given:
+        Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
+            {
+                put(Coin.COIN_0_5, 2)
+                put(Coin.COIN_0_1, 3)
+            }
+        };
+        bank = new Bank()
+        bank.initialize(coins)
+        expect:
+        bank.withdraw(new BigDecimal("1.5")) == false
         bank.balance() == 1.3
     }
 }

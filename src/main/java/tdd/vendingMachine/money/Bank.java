@@ -19,11 +19,36 @@ public class Bank {
     }
 
     public void insertCoin(Coin coin) {
-        money.put(coin, Math.incrementExact(money.get(coin) != null ? money.get(coin) : 0));
+        if (money.containsKey(coin)) {
+            Math.incrementExact(money.get(coin));
+        } else {
+            money.put(coin, 1);
+        }
     }
 
-    public void withdraw(double moneyToReturn) {
+    public boolean withdraw(BigDecimal moneyToReturn) {
+        Map<Coin, Integer> transactionUpdate = new EnumMap<>(Coin.class);
+        for (Coin coin : money.keySet()) {
+            int coinToReturn = moneyToReturn.divide(coin.getValue()).intValue();
+            int currentMoneyState = money.get(coin);
+            if (coinToReturn <= currentMoneyState) {
+                transactionUpdate.put(coin, currentMoneyState - coinToReturn);
+                moneyToReturn = moneyToReturn.subtract(coin.getValue().multiply(BigDecimal.valueOf(coinToReturn)));
+            } else {
+                transactionUpdate.put(coin, 0);
+                moneyToReturn = moneyToReturn.subtract(coin.getValue().multiply(BigDecimal.valueOf(currentMoneyState)));
+            }
+        }
+        if (BigDecimal.ZERO.compareTo(moneyToReturn) == 0) {
+            return acceptTransaction(transactionUpdate);
+        } else {
+            return false;
+        }
+    }
 
+    private boolean acceptTransaction(Map<Coin, Integer> transactionUpdate) {
+        money.putAll(transactionUpdate);
+        return true;
     }
 
     public BigDecimal balance() {
