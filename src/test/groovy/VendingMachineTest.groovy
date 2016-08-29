@@ -1,10 +1,14 @@
 import spock.lang.Specification
+import tdd.vendingMachine.HardwareInterface
 
 class VendingMachineTest extends Specification {
-    def "maximum of two numbers"() {
+
+    HardwareInterface hardwareInterface
+
+    def "initial test"() {
         given:
         expect:
-        Math.min(a, b) == c
+
 
         where:
         a | b || c
