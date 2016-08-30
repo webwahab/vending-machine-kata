@@ -21,12 +21,7 @@ class BankTest extends Specification {
 
     def "insert coins after bank initialization"() {
         given:
-        Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
-            {
-                put(Coin.COIN_0_5, 2)
-                put(Coin.COIN_0_1, 3)
-            }
-        };
+        Map<Coin, Integer> coins = [(Coin.COIN_0_5): 2, (Coin.COIN_0_1): 3]
         bank = new Bank()
         when:
         bank.initialize(coins)
@@ -36,12 +31,7 @@ class BankTest extends Specification {
 
     def "withdraw money"() {
         given:
-        Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
-            {
-                put(Coin.COIN_0_5, 2)
-                put(Coin.COIN_0_1, 3)
-            }
-        };
+        Map<Coin, Integer> coins = [(Coin.COIN_0_5): 2, (Coin.COIN_0_1): 3]
         bank = new Bank()
         bank.initialize(coins)
         when:
@@ -52,16 +42,11 @@ class BankTest extends Specification {
 
     def "not enough amount of money"() {
         given:
-        Map<Coin, Integer> coins = new HashMap<Coin, Integer>() {
-            {
-                put(Coin.COIN_0_5, 2)
-                put(Coin.COIN_0_1, 3)
-            }
-        };
+        Map<Coin, Integer> coins = [(Coin.COIN_0_5): 2, (Coin.COIN_0_1): 3]
         bank = new Bank()
         bank.initialize(coins)
         expect:
-        bank.withdraw(new BigDecimal("1.5")) == false
+        bank.withdraw(new BigDecimal("1.5")).isPresent() == false
         bank.balance() == 1.3
     }
 }

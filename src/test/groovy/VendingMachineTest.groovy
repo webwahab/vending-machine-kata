@@ -2,9 +2,10 @@ import spock.lang.Specification
 import tdd.vendingMachine.HardwareInterface
 import tdd.vendingMachine.VendingMachine
 import tdd.vendingMachine.money.Coin
-import static tdd.vendingMachine.products.ProductType.*
 import tdd.vendingMachine.products.Shelf
-import tdd.vendingMachine.utils.DisplayMessages
+
+import static tdd.vendingMachine.products.ProductType.*
+import static tdd.vendingMachine.utils.DisplayMessages.*
 
 class VendingMachineTest extends Specification {
 
@@ -17,6 +18,7 @@ class VendingMachineTest extends Specification {
         Map<Integer, Shelf> shelves = new HashMap<>();
         shelves.put(1, Shelf.of(5, COCA_COLA_0_25))
         shelves.put(2, Shelf.of(2, MINERAL_WATER_0_33))
+        shelves.put(2, Shelf.of(0, TYMBARK_0_5))
         Map<Coin, Integer> coins = new EnumMap<>(Coin.class)
         coins.put(Coin.COIN_0_1, 3)
         coins.put(Coin.COIN_0_2, 3)
@@ -29,7 +31,14 @@ class VendingMachineTest extends Specification {
         when:
         vendingMachine.chooseShelve(3)
         then:
-        1 * hardwareInterface.displayWarning(DisplayMessages.SHELF_NOT_FOUND)
+        1 * hardwareInterface.displayWarning(SHELF_NOT_FOUND)
+    }
+
+    def "choosen shelf with no products"() {
+        when:
+        vendingMachine.chooseShelve(3)
+        then:
+        1 * hardwareInterface.displayWarning(SHELF_NOT_FOUND)
     }
 
 
@@ -37,6 +46,52 @@ class VendingMachineTest extends Specification {
         when:
         vendingMachine.chooseShelve(1)
         then:
-        1 * hardwareInterface.displayMsg(COCA_COLA_0_25.getPrice().toString())
+        1 * hardwareInterface.displayMsg(productCosts(COCA_COLA_0_25.getPrice()))
+    }
+
+    def "buy product"() {
+        when:
+        vendingMachine.chooseShelve(1)
+        vendingMachine.insertCoin(Coin.COIN_0_5)
+        vendingMachine.insertCoin(Coin.COIN_1)
+        then:
+        1 * hardwareInterface.displayMsg(toPay(new BigDecimal("1.0")))
+        1 * hardwareInterface.returnProduct(1)
+    }
+
+    def "buy product without change"() {
+        when:
+        vendingMachine.chooseShelve(1)
+        vendingMachine.insertCoin(Coin.COIN_0_5)
+        vendingMachine.insertCoin(Coin.COIN_1)
+        then:
+        1 * hardwareInterface.returnTheMoney(new LinkedList<Coin>())
+    }
+
+    def "buy product with change"() {
+        given:
+        List<Coin> coinsToReturn = [Coin.COIN_0_1]
+        when:
+        vendingMachine.chooseShelve(1)
+        vendingMachine.insertCoin(Coin.COIN_0_5)
+        vendingMachine.insertCoin(Coin.COIN_0_1)
+        vendingMachine.insertCoin(Coin.COIN_1)
+        then:
+        1 * hardwareInterface.returnTheMoney(coinsToReturn)
+    }
+
+    def "try to buy product when machine has no money to return change"() {
+        given:
+        List<Coin> coinsToReturn = [Coin.COIN_5]
+        when:
+        vendingMachine.chooseShelve(1)
+        vendingMachine.insertCoin(Coin.COIN_0_5)
+        vendingMachine.insertCoin(Coin.COIN_0_1)
+        vendingMachine.insertCoin(Coin.COIN_5)
+        vendingMachine.chooseShelve(1)
+        vendingMachine.insertCoin(Coin.COIN_5)
+        then:
+        1 * hardwareInterface.displayWarning(INSUFFICIENT_MONEY_TO_RETURN_CHANGE)
+        1 * hardwareInterface.returnTheMoney(coinsToReturn)
     }
 }

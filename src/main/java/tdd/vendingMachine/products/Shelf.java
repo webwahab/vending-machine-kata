@@ -19,4 +19,8 @@ public class Shelf {
     public ProductType getProductType() {
         return productType;
     }
+
+    public boolean hasProducts() {
+        return amountOfProducts > 0;
+    }
 }

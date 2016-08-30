@@ -4,10 +4,15 @@ import tdd.vendingMachine.money.Bank;
 import tdd.vendingMachine.money.Coin;
 import tdd.vendingMachine.products.ProductType;
 import tdd.vendingMachine.products.Shelf;
-import tdd.vendingMachine.utils.DisplayMessages;
+import tdd.vendingMachine.transaction.Transaction;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import static tdd.vendingMachine.utils.DisplayMessages.*;
 
 public class VendingMachine {
 
@@ -25,16 +30,39 @@ public class VendingMachine {
     }
 
     public void chooseShelve(int shelveNumber) {
-        if (shelves.containsKey(shelveNumber)) {
-            ProductType productType = shelves.get(shelveNumber).getProductType();
-            currentTransaction = new Transaction(shelveNumber, productType);
-            hardwareInterface.displayMsg(productType.getPrice().toString());
+        if (!shelves.containsKey(shelveNumber)) {
+            hardwareInterface.displayWarning(SHELF_NOT_FOUND);
+        } else if (!shelves.get(shelveNumber).hasProducts()) {
+            hardwareInterface.displayWarning(PRODUCT_OUT_OF_STOCK);
         } else {
-            hardwareInterface.displayWarning(DisplayMessages.SHELF_NOT_FOUND);
+            ProductType productType = shelves.get(shelveNumber).getProductType();
+            currentTransaction = Transaction.of(shelveNumber, productType);
+            hardwareInterface.displayMsg(productCosts(productType.getPrice()));
         }
     }
 
     public void insertCoin(Coin coin) {
+        bank.insertCoin(coin);
+        currentTransaction.insertCoin(coin);
+        BigDecimal missingMoney = currentTransaction.getMissingMoney();
+        if (BigDecimal.ZERO.compareTo(missingMoney) >= 0) {
+            finishTransaction(missingMoney.negate());
+        } else {
+            hardwareInterface.displayMsg(toPay(missingMoney));
+        }
+    }
+
+    private void finishTransaction(BigDecimal missingMoney) {
+        Optional<List<Coin>> coinsToReturn = bank.withdraw(missingMoney);
+        if (coinsToReturn.isPresent()) {
+            hardwareInterface.returnTheMoney(coinsToReturn.get());
+            hardwareInterface.returnProduct(currentTransaction.getChoosenShelf());
+            currentTransaction.commit();
+        } else {
+            hardwareInterface.displayWarning(INSUFFICIENT_MONEY_TO_RETURN_CHANGE);
+            hardwareInterface.returnTheMoney(bank.withdraw(currentTransaction.getCurrentMoney()).get());
+            currentTransaction.rollback();
+        }
     }
 
     public void cancel() {
