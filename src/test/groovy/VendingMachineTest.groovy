@@ -15,21 +15,14 @@ class VendingMachineTest extends Specification {
     def "setup"() {
         hardwareInterface = Mock(HardwareInterface);
         vendingMachine = new VendingMachine()
-        Map<Integer, Shelf> shelves = new HashMap<>();
-        shelves.put(1, Shelf.of(5, COCA_COLA_0_25))
-        shelves.put(2, Shelf.of(2, MINERAL_WATER_0_33))
-        shelves.put(2, Shelf.of(0, TYMBARK_0_5))
-        Map<Coin, Integer> coins = new EnumMap<>(Coin.class)
-        coins.put(Coin.COIN_0_1, 3)
-        coins.put(Coin.COIN_0_2, 3)
-        coins.put(Coin.COIN_0_5, 3)
-        coins.put(Coin.COIN_1, 3)
+        Map<Integer, Shelf> shelves = [1: Shelf.of(5, COCA_COLA_0_25), 2: Shelf.of(2, MINERAL_WATER_0_33), 3: Shelf.of(0, TYMBARK_0_5)]
+        Map<Coin, Integer> coins = [(Coin.COIN_0_1): 3, (Coin.COIN_0_2): 3, (Coin.COIN_0_5): 3, (Coin.COIN_1): 3]
         vendingMachine.initialize(hardwareInterface, shelves, coins)
     }
 
     def "choosen shelf not found"() {
         when:
-        vendingMachine.chooseShelve(3)
+        vendingMachine.chooseShelve(4)
         then:
         1 * hardwareInterface.displayWarning(SHELF_NOT_FOUND)
     }
@@ -38,7 +31,7 @@ class VendingMachineTest extends Specification {
         when:
         vendingMachine.chooseShelve(3)
         then:
-        1 * hardwareInterface.displayWarning(SHELF_NOT_FOUND)
+        1 * hardwareInterface.displayWarning(PRODUCT_OUT_OF_STOCK)
     }
 
 
@@ -93,5 +86,9 @@ class VendingMachineTest extends Specification {
         then:
         1 * hardwareInterface.displayWarning(INSUFFICIENT_MONEY_TO_RETURN_CHANGE)
         1 * hardwareInterface.returnTheMoney(coinsToReturn)
+    }
+
+    def "press cancel button"() {
+
     }
 }
