@@ -76,11 +76,11 @@ class VendingMachineTest extends Specification {
     def "try to buy product when machine has no money to return change"() {
         given:
         List<Coin> coinsToReturn = [Coin.COIN_5]
-        when:
         vendingMachine.chooseShelve(1)
         vendingMachine.insertCoin(Coin.COIN_0_5)
         vendingMachine.insertCoin(Coin.COIN_0_1)
         vendingMachine.insertCoin(Coin.COIN_5)
+        when:
         vendingMachine.chooseShelve(1)
         vendingMachine.insertCoin(Coin.COIN_5)
         then:
@@ -89,6 +89,12 @@ class VendingMachineTest extends Specification {
     }
 
     def "press cancel button"() {
-
+        List<Coin> coinsToReturn = [Coin.COIN_1]
+        vendingMachine.chooseShelve(1)
+        vendingMachine.insertCoin(Coin.COIN_0_5)
+        when:
+        vendingMachine.cancel()
+        then:
+        hardwareInterface.returnTheMoney(coinsToReturn)
     }
 }

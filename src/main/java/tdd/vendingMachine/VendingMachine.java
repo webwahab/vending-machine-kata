@@ -66,7 +66,8 @@ public class VendingMachine {
     }
 
     public void cancel() {
-
+        hardwareInterface.returnTheMoney(bank.withdraw(currentTransaction.getCurrentMoney()).get());
+        currentTransaction.rollback();
     }
 
 
