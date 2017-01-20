@@ -50,3 +50,4 @@ The assignment
 11. After selecting a shelve and inserting insufficient money to buy a product, user has to press "Cancel" to get their money back.
 12. If machine does not have enough money to give the change it must show a warning message and return the money user has put, and it should not give the product.
 13. Machine can return change using only money that was put into it (or by someone at start or by people who bought goods). Machine cannot create it's own money!
+
